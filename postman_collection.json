@@ -1,0 +1,288 @@
+{
+  "info": {
+    "name": "Campus Notification Platform — E0223009",
+    "description": "All endpoints for the Campus Notification Platform. Backend runs on localhost:5000. No auth header needed — backend handles token automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🟢 LOCAL BACKEND (localhost:5000)",
+      "item": [
+        {
+          "name": "1. Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "2. Get All Notifications (page 1, limit 5)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications?page=1&limit=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Get All Notifications (page 2, limit 5)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications?page=2&limit=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page", "value": "2" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Filter — Placement only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications?notification_type=Placement&page=1&limit=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Placement" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Filter — Result only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications?notification_type=Result&page=1&limit=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Result" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. Filter — Event only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications?notification_type=Event&page=1&limit=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Event" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "7. ❌ Invalid Type — 400 Error Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications?notification_type=Invalid",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Invalid" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "8. Priority Inbox — Top 10",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/priority?n=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications", "priority"],
+              "query": [
+                { "key": "n", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "9. Priority Inbox — Top 5",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/priority?n=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications", "priority"],
+              "query": [
+                { "key": "n", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "10. Priority Inbox — Top 20",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/priority?n=20",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "notifications", "priority"],
+              "query": [
+                { "key": "n", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "11. Frontend Log Proxy (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stack\": \"frontend\",\n  \"level\": \"info\",\n  \"package\": \"component\",\n  \"message\": \"User viewed priority inbox\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/log",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "log"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔵 EVALUATION SERVER (direct)",
+      "item": [
+        {
+          "name": "Auth — Get Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"advaitas1926@gmail.com\",\n  \"name\": \"advaita suresh\",\n  \"rollNo\": \"e0223009\",\n  \"accessCode\": \"DvwEDZ\",\n  \"clientID\": \"d605f49e-8737-4872-91fa-e34a55f8e83d\",\n  \"clientSecret\": \"BPgRzJCCQNtcSUVG\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "http://4.224.186.213/evaluation-service/auth",
+              "protocol": "http",
+              "host": ["4.224.186.213"],
+              "path": ["evaluation-service", "auth"]
+            }
+          }
+        },
+        {
+          "name": "Get Notifications from Eval Server",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJhZHZhaXRhczE5MjZAZ21haWwuY29tIiwiZXhwIjoxNzgxMDc2MTY1LCJpYXQiOjE3ODEwNzUyNjUsImlzcyI6IkFmZm9yZCBNZWRpY2FsIFRlY2hub2xvZ2llcyBQcml2YXRlIExpbWl0ZWQiLCJqdGkiOiI5MzJjZjU1Yi02ODFkLTQ1MDktOWYzMi04MmM3YTk1OTg5ZDEiLCJsb2NhbGUiOiJlbi1JTiIsIm5hbWUiOiJhZHZhaXRhIHN1cmVzaCIsInN1YiI6ImQ2MDVmNDllLTg3MzctNDg3Mi05MWZhLWUzNGE1NWY4ZTgzZCJ9LCJlbWFpbCI6ImFkdmFpdGFzMTkyNkBnbWFpbC5jb20iLCJuYW1lIjoiYWR2YWl0YSBzdXJlc2giLCJyb2xsTm8iOiJlMDIyMzAwOSIsImFjY2Vzc0NvZGUiOiJEdndFRFoiLCJjbGllbnRJRCI6ImQ2MDVmNDllLTg3MzctNDg3Mi05MWZhLWUzNGE1NWY4ZTgzZCIsImNsaWVudFNlY3JldCI6IkJQZ1J6SkNDUU50Y1NVVkcifQ.5sUvniJQC-PXhLfdFd8ssvwD3vKxJMjtHJQ9UeOjsQQ"
+              }
+            ],
+            "url": {
+              "raw": "http://4.224.186.213/evaluation-service/notifications?page=1&limit=5",
+              "protocol": "http",
+              "host": ["4.224.186.213"],
+              "path": ["evaluation-service", "notifications"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send Log to Eval Server",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJhZHZhaXRhczE5MjZAZ21haWwuY29tIiwiZXhwIjoxNzgxMDc2MTY1LCJpYXQiOjE3ODEwNzUyNjUsImlzcyI6IkFmZm9yZCBNZWRpY2FsIFRlY2hub2xvZ2llcyBQcml2YXRlIExpbWl0ZWQiLCJqdGkiOiI5MzJjZjU1Yi02ODFkLTQ1MDktOWYzMi04MmM3YTk1OTg5ZDEiLCJsb2NhbGUiOiJlbi1JTiIsIm5hbWUiOiJhZHZhaXRhIHN1cmVzaCIsInN1YiI6ImQ2MDVmNDllLTg3MzctNDg3Mi05MWZhLWUzNGE1NWY4ZTgzZCJ9LCJlbWFpbCI6ImFkdmFpdGFzMTkyNkBnbWFpbC5jb20iLCJuYW1lIjoiYWR2YWl0YSBzdXJlc2giLCJyb2xsTm8iOiJlMDIyMzAwOSIsImFjY2Vzc0NvZGUiOiJEdndFRFoiLCJjbGllbnRJRCI6ImQ2MDVmNDllLTg3MzctNDg3Mi05MWZhLWUzNGE1NWY4ZTgzZCIsImNsaWVudFNlY3JldCI6IkJQZ1J6SkNDUU50Y1NVVkcifQ.5sUvniJQC-PXhLfdFd8ssvwD3vKxJMjtHJQ9UeOjsQQ"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stack\": \"backend\",\n  \"level\": \"info\",\n  \"package\": \"controller\",\n  \"message\": \"Server started on port 5000\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "http://4.224.186.213/evaluation-service/logs",
+              "protocol": "http",
+              "host": ["4.224.186.213"],
+              "path": ["evaluation-service", "logs"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
