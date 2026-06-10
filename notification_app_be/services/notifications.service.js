@@ -9,14 +9,17 @@
  */
 
 import axios from 'axios';
-import { Log } from '../../logging_middleware/index.js';
+import { Log }      from '../../logging_middleware/index.js';
+import { getToken } from './token.service.js';
 import { computeTopN } from './priority.service.js';
 
 const NOTIFICATIONS_API = 'http://4.224.186.213/evaluation-service/notifications';
 
-function authHeaders() {
+// Always fetches a valid (auto-refreshed) token before each upstream call
+async function authHeaders() {
+  const token = await getToken();
   return {
-    Authorization : `Bearer ${process.env.ACCESS_TOKEN}`,
+    Authorization : `Bearer ${token}`,
     'Content-Type': 'application/json',
   };
 }
@@ -41,7 +44,7 @@ async function fetchAllFromUpstream(notification_type) {
 
   try {
     const response = await axios.get(NOTIFICATIONS_API, {
-      headers: authHeaders(),
+      headers: await authHeaders(),
       params,
       timeout: 8000,
     });

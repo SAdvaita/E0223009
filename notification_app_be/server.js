@@ -1,51 +1,54 @@
 /**
  * Campus Notification Platform — Backend Server
  *
- * Entry point. Configures the shared logging middleware, sets up
- * Express with CORS + JSON parsing, mounts routers, and starts
- * listening. All lifecycle events are logged through the reusable
- * logging-middleware package.
+ * Entry point. Initialises the token manager (auto-refresh),
+ * configures the shared logging middleware, sets up Express
+ * with CORS + JSON parsing, mounts routers, and starts listening.
+ * All lifecycle events are logged through the reusable logging-middleware.
  */
 
-import express   from 'express';
-import cors      from 'cors';
+import express from 'express';
+import cors    from 'cors';
 import 'dotenv/config';
-import { configure, Log } from '../logging_middleware/index.js';
-import notificationsRouter from './routes/notifications.routes.js';
 
-const PORT         = Number(process.env.PORT) || 5000;
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+import { configure, Log }   from '../logging_middleware/index.js';
+import { initTokenManager, getToken } from './services/token.service.js';
+import notificationsRouter  from './routes/notifications.routes.js';
 
-// ── Initialise shared logger ─────────────────────────────────────────────────
-if (!ACCESS_TOKEN) {
+const PORT = Number(process.env.PORT) || 5000;
+
+// ── Initialise token manager (handles auto-refresh every 2 min) ───────────────
+initTokenManager();
+
+// ── Seed logger with the initial token from .env ──────────────────────────────
+const initialToken = process.env.ACCESS_TOKEN;
+if (!initialToken) {
   console.error('[Server] FATAL: ACCESS_TOKEN missing from .env — aborting');
   process.exit(1);
 }
-configure(ACCESS_TOKEN);
+configure(initialToken);
 
 const app = express();
 
-// ── Security & global middleware ─────────────────────────────────────────────
-// Restrict CORS to the React dev server only
+// ── Security & global middleware ──────────────────────────────────────────────
+// Restrict CORS to the React dev-server only
 app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'] }));
-app.use(express.json());
-
-// Sanitise incoming JSON to prevent prototype pollution (secure coding)
+// strict:true prevents prototype-pollution via crafted JSON payloads
 app.use(express.json({ strict: true }));
 
-// ── HTTP request logger ──────────────────────────────────────────────────────
+// ── HTTP request logger ───────────────────────────────────────────────────────
 app.use(async (req, _res, next) => {
   await Log(
     'backend', 'info', 'controller',
-    `Incoming ${req.method} ${req.originalUrl} from ${req.ip}`
+    `${req.method} ${req.path} — ${req.ip}`
   );
   next();
 });
 
-// ── Routes ───────────────────────────────────────────────────────────────────
+// ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/notifications', notificationsRouter);
 
-// ── Health check ─────────────────────────────────────────────────────────────
+// ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({
     status : 'ok',
@@ -56,8 +59,8 @@ app.get('/health', (_req, res) => {
 });
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
-app.use(async (_req, res) => {
-  await Log('backend', 'warn', 'controller', `404 — route not found: ${_req.originalUrl}`);
+app.use(async (req, res) => {
+  await Log('backend', 'warn', 'controller', `404 not found: ${req.path}`);
   res.status(404).json({ success: false, message: 'Endpoint not found' });
 });
 
@@ -65,16 +68,15 @@ app.use(async (_req, res) => {
 app.use(async (err, req, res, _next) => {
   await Log(
     'backend', 'fatal', 'controller',
-    `Unhandled exception on ${req.method} ${req.originalUrl}: ${err.message}`
+    `Unhandled error ${req.method} ${req.path}: ${err.message}`.slice(0, 48)
   );
   res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
 // ── Start server ──────────────────────────────────────────────────────────────
 app.listen(PORT, async () => {
-  await Log(
-    'backend', 'info', 'controller',
-    `Campus notification backend started — port ${PORT}, env loaded, logger configured`
-  );
+  const token = await getToken(); // ensures a fresh token on startup
+  configure(token);               // update logger with freshest token
+  await Log('backend', 'info', 'controller', `Server started on port ${PORT}`);
   console.log(`Server running at http://localhost:${PORT}`);
 });
