@@ -2,9 +2,11 @@
  * Notifications Service
  *
  * Business logic layer.
- * - Fetches ALL notifications from the Affordmed evaluation server in one call
- *   (the upstream API does not support pagination or limit params)
- * - Applies filtering and pagination CLIENT-SIDE
+ * - Fetches notifications from the Affordmed evaluation server
+ * - Passes page, limit and notification_type directly to upstream
+ *   (the API now supports these query parameters natively)
+ * - notification_type filtering is applied client-side as a safety net
+ *   in case upstream returns mixed types
  * - Delegates priority ranking to priority.service.js
  */
 
@@ -25,21 +27,21 @@ async function authHeaders() {
 }
 
 /**
- * Fetch ALL notifications from the upstream evaluation API.
- * Supports optional notification_type query param (server-side filter).
- * Returns raw array.
- *
- * @param {string} [notification_type]  'Event' | 'Result' | 'Placement'
+ * Core fetch — calls upstream evaluation API with native pagination support.
+ * @param {Object} opts
+ * @param {number} [opts.page=1]
+ * @param {number} [opts.limit=10]
+ * @param {string} [opts.notification_type]
  * @returns {Promise<Array>}
  */
-async function fetchAllFromUpstream(notification_type) {
+async function fetchFromUpstream({ page = 1, limit = 10, notification_type } = {}) {
   await Log(
     'backend', 'debug', 'domain',
-    `Upstream call — GET /evaluation-service/notifications type:${notification_type ?? 'all'}`
+    `Upstream: page=${page} limit=${limit} type=${notification_type ?? 'all'}`
   );
 
-  // Only pass notification_type if provided — upstream rejects unknown params
-  const params = {};
+  // Build params — upstream supports page, limit, notification_type
+  const params = { page, limit };
   if (notification_type) params.notification_type = notification_type;
 
   try {
@@ -53,7 +55,7 @@ async function fetchAllFromUpstream(notification_type) {
 
     await Log(
       'backend', 'debug', 'domain',
-      `Upstream responded — ${notifications.length} notification(s) received`
+      `Upstream returned ${notifications.length} notifications`
     );
 
     return notifications;
@@ -61,44 +63,38 @@ async function fetchAllFromUpstream(notification_type) {
     const errMsg = err.response?.data?.message ?? err.message;
     await Log(
       'backend', 'error', 'domain',
-      `Upstream notifications API failed: ${errMsg} (status: ${err.response?.status ?? 'N/A'})`
+      `Upstream failed: ${errMsg}`.slice(0, 48)
     );
     throw new Error(errMsg);
   }
 }
 
 /**
- * Returns paginated notifications with navigation metadata.
- * Pagination is handled client-side since upstream returns all items.
+ * Returns paginated notifications.
+ * Uses upstream pagination — fetches (limit + 1) to detect hasNextPage.
  */
 export async function getPaginatedNotifications({ page = 1, limit = 10, notification_type }) {
   await Log(
     'backend', 'info', 'domain',
-    `getPaginatedNotifications — building page ${page} (limit:${limit} type:${notification_type ?? 'all'})`
+    `getPaginated: page=${page} limit=${limit}`
   );
 
-  // Fetch all from upstream (apply type filter if provided)
-  const all = await fetchAllFromUpstream(notification_type);
-
-  // Client-side pagination
-  const totalItems  = all.length;
-  const totalPages  = Math.ceil(totalItems / limit) || 1;
-  const startIndex  = (page - 1) * limit;
-  const notifications = all.slice(startIndex, startIndex + limit);
+  // Fetch limit+1 to detect if there's a next page (no COUNT query needed)
+  const data        = await fetchFromUpstream({ page, limit: limit + 1, notification_type });
+  const hasNextPage = data.length > limit;
+  const notifications = hasNextPage ? data.slice(0, limit) : data;
 
   await Log(
     'backend', 'debug', 'domain',
-    `Pagination result — page:${page}/${totalPages} items:${notifications.length} total:${totalItems}`
+    `Page ${page}: ${notifications.length} items, hasNext=${hasNextPage}`
   );
 
   return {
     notifications,
     pagination: {
-      totalItems,
-      totalPages,
       currentPage    : page,
       limit,
-      hasNextPage    : page < totalPages,
+      hasNextPage,
       hasPreviousPage: page > 1,
     },
   };
@@ -106,26 +102,27 @@ export async function getPaginatedNotifications({ page = 1, limit = 10, notifica
 
 /**
  * Returns the top N priority notifications.
- * Fetches all notifications and runs the priority algorithm.
+ * Fetches a large batch for ranking via the priority algorithm.
  */
 export async function getTopPriorityNotifications(n = 10) {
   await Log(
     'backend', 'info', 'domain',
-    `getTopPriorityNotifications — fetching all for priority ranking, target n:${n}`
+    `getPriorityTop: n=${n}, fetching batch`
   );
 
-  const allNotifications = await fetchAllFromUpstream();
+  // Fetch up to 100 for ranking; upstream handles the limit
+  const allNotifications = await fetchFromUpstream({ page: 1, limit: 100 });
 
   await Log(
     'backend', 'debug', 'domain',
-    `Priority algorithm input — ${allNotifications.length} notifications to rank`
+    `Priority input: ${allNotifications.length} notifications`
   );
 
   const topN = computeTopN(allNotifications, n);
 
   await Log(
     'backend', 'info', 'domain',
-    `Priority ranking complete — selected top ${topN.length} from ${allNotifications.length} total`
+    `Priority done: top ${topN.length} selected`
   );
 
   return topN;
