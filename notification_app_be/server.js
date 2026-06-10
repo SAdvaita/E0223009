@@ -14,6 +14,7 @@ import 'dotenv/config';
 import { configure, Log }   from '../logging_middleware/index.js';
 import { initTokenManager, getToken } from './services/token.service.js';
 import notificationsRouter  from './routes/notifications.routes.js';
+import logRouter            from './routes/log.routes.js';
 
 const PORT = Number(process.env.PORT) || 5000;
 
@@ -47,6 +48,7 @@ app.use(async (req, _res, next) => {
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/notifications', notificationsRouter);
+app.use('/api/log',           logRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {

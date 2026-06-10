@@ -6,6 +6,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { fetchPriorityNotifications } from '../services/apiService.js';
 import NotificationCard from '../components/NotificationCard.jsx';
 import FilterBar        from '../components/FilterBar.jsx';
+import { logFE }        from '../utils/logger.js';
 
 const VIEWED_KEY = 'campus_notify_viewed';
 
@@ -34,11 +35,15 @@ export default function PriorityInboxPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    await logFE('info', 'component', `PriorityInbox: loading top ${n}`);
     try {
       const data = await fetchPriorityNotifications(n);
       setNotifications(data.notifications ?? []);
+      await logFE('info', 'api', `Priority: got ${(data.notifications??[]).length} items`);
     } catch (err) {
-      setError(err.response?.data?.message ?? err.message ?? 'Failed to load priority notifications');
+      const msg = err.response?.data?.message ?? err.message ?? 'Failed to load priority';
+      await logFE('error', 'api', `Priority fetch failed: ${msg}`);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -58,6 +63,7 @@ export default function PriorityInboxPage() {
   function handleMarkRead(id) {
     persistViewed(id);
     setViewedIds(getViewedIds());
+    logFE('info', 'component', `Priority item marked read: ${id}`);
   }
 
   return (
@@ -96,7 +102,7 @@ export default function PriorityInboxPage() {
         <Slider
           id="top-n-slider"
           value={n}
-          onChange={(_, val) => setN(val)}
+          onChange={(_, val) => { setN(val); logFE('info', 'component', `Top-N slider changed to ${val}`); }}
           min={5}
           max={30}
           step={5}

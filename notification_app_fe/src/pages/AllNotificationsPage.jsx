@@ -7,6 +7,7 @@ import { fetchAllNotifications }  from '../services/apiService.js';
 import NotificationCard           from '../components/NotificationCard.jsx';
 import FilterBar                  from '../components/FilterBar.jsx';
 import PaginationBar              from '../components/PaginationBar.jsx';
+import { logFE }                  from '../utils/logger.js';
 
 const VIEWED_KEY = 'campus_notify_viewed';
 
@@ -33,6 +34,7 @@ export default function AllNotificationsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    await logFE('info', 'component', `AllNotifications: page=${page} type=${notificationType||'all'}`);
     try {
       const data = await fetchAllNotifications({
         page,
@@ -41,8 +43,11 @@ export default function AllNotificationsPage() {
       });
       setNotifications(data.notifications ?? []);
       setPagination(data.pagination       ?? {});
+      await logFE('info', 'api', `Fetched ${(data.notifications??[]).length} notifications`);
     } catch (err) {
-      setError(err.response?.data?.message ?? err.message ?? 'Failed to load notifications');
+      const msg = err.response?.data?.message ?? err.message ?? 'Failed to load';
+      await logFE('error', 'api', `AllNotifications fetch failed: ${msg}`);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -53,11 +58,13 @@ export default function AllNotificationsPage() {
   function handleMarkRead(id) {
     persistViewed(id);
     setViewedIds(getViewedIds());
+    logFE('info', 'component', `Notification marked as read: ${id}`);
   }
 
   function handleTypeChange(type) {
     setNotificationType(type);
     setPage(1);
+    logFE('info', 'component', `Filter changed to: ${type || 'all'}`);
   }
 
   const newCount = notifications.filter((n) => !viewedIds.has(n.ID)).length;
