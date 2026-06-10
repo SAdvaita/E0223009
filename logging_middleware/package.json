@@ -1,0 +1,12 @@
+{
+  "name": "logging-middleware",
+  "version": "1.0.0",
+  "description": "Reusable structured logging middleware — sends log events to the evaluation server",
+  "type": "module",
+  "main": "index.js",
+  "keywords": ["logging", "middleware", "structured-logs"],
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

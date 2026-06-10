@@ -1,0 +1,350 @@
+{
+  "info": {
+    "_postman_id": "campus-notify-collection",
+    "name": "Campus Notification Platform",
+    "description": "Complete API collection for the campus notification platform backend (port 5000) and the Affordmed evaluation server (port 4.224.186.213).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "backendUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "evalUrl",
+      "value": "http://4.224.186.213",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJhZHZhaXRhczE5MjZAZ21haWwuY29tIiwiZXhwIjoxNzgxMDY4NTg2LCJpYXQiOjE3ODEwNjc2ODYsImlzcyI6IkFmZm9yZCBNZWRpY2FsIFRlY2hub2xvZ2llcyBQcml2YXRlIExpbWl0ZWQiLCJqdGkiOiJlYmNkOWQxYi0xNDQ3LTQ2NzctODJkYi00ZTk5Y2U4YWRmODQiLCJsb2NhbGUiOiJlbi1JTiIsIm5hbWUiOiJhZHZhaXRhIHN1cmVzaCIsInN1YiI6ImQ2MDVmNDllLTg3MzctNDg3Mi05MWZhLWUzNGE1NWY4ZTgzZCJ9LCJlbWFpbCI6ImFkdmFpdGFzMTkyNkBnbWFpbC5jb20iLCJuYW1lIjoiYWR2YWl0YSBzdXJlc2giLCJyb2xsTm8iOiJlMDIyMzAwOSIsImFjY2Vzc0NvZGUiOiJEdndFRFoiLCJjbGllbnRJRCI6ImQ2MDVmNDllLTg3MzctNDg3Mi05MWZhLWUzNGE1NWY4ZTgzZCIsImNsaWVudFNlY3JldCI6IkJQZ1J6SkNDUU50Y1NVVkcifQ.Z3eO2-5IuoC7nNz4WJdnHd4KvOn_yHU0IfwLDh-KkOw",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Evaluation Server",
+      "description": "Direct calls to the Affordmed evaluation server (http://4.224.186.213)",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{evalUrl}}/evaluation-service/register",
+              "host": ["{{evalUrl}}"],
+              "path": ["evaluation-service", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"advaitas1926@gmail.com\",\n  \"name\": \"advaita suresh\",\n  \"mobileNo\": \"9999999999\",\n  \"githubUsername\": \"your-github-username\",\n  \"rollNo\": \"e0223009\",\n  \"accessCode\": \"DvwEDZ\"\n}"
+            },
+            "description": "One-time registration to obtain clientID and clientSecret. Can only be called once."
+          }
+        },
+        {
+          "name": "Get Auth Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{evalUrl}}/evaluation-service/auth",
+              "host": ["{{evalUrl}}"],
+              "path": ["evaluation-service", "auth"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"advaitas1926@gmail.com\",\n  \"name\": \"advaita suresh\",\n  \"rollNo\": \"e0223009\",\n  \"accessCode\": \"DvwEDZ\",\n  \"clientID\": \"d605f49e-8737-4872-91fa-e34a55f8e83d\",\n  \"clientSecret\": \"BPgRzJCCQNtcSUVG\"\n}"
+            },
+            "description": "Obtain a Bearer access token. Use the returned access_token in all subsequent protected requests."
+          }
+        },
+        {
+          "name": "Get Notifications (All Types)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{evalUrl}}/evaluation-service/notifications?page=1&limit=10",
+              "host": ["{{evalUrl}}"],
+              "path": ["evaluation-service", "notifications"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Fetch all notifications from the evaluation server (paginated)."
+          }
+        },
+        {
+          "name": "Get Notifications (Placement only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{evalUrl}}/evaluation-service/notifications?notification_type=Placement&page=1&limit=10",
+              "host": ["{{evalUrl}}"],
+              "path": ["evaluation-service", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Placement" },
+                { "key": "page",              "value": "1" },
+                { "key": "limit",             "value": "10" }
+              ]
+            },
+            "description": "Filter notifications by type=Placement."
+          }
+        },
+        {
+          "name": "Get Notifications (Result only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{evalUrl}}/evaluation-service/notifications?notification_type=Result&page=1&limit=10",
+              "host": ["{{evalUrl}}"],
+              "path": ["evaluation-service", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Result" },
+                { "key": "page",              "value": "1" },
+                { "key": "limit",             "value": "10" }
+              ]
+            },
+            "description": "Filter notifications by type=Result."
+          }
+        },
+        {
+          "name": "Get Notifications (Event only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{evalUrl}}/evaluation-service/notifications?notification_type=Event&page=1&limit=10",
+              "host": ["{{evalUrl}}"],
+              "path": ["evaluation-service", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Event" },
+                { "key": "page",              "value": "1" },
+                { "key": "limit",             "value": "10" }
+              ]
+            },
+            "description": "Filter notifications by type=Event."
+          }
+        },
+        {
+          "name": "Send Log",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization",  "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type",   "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{evalUrl}}/evaluation-service/logs",
+              "host": ["{{evalUrl}}"],
+              "path": ["evaluation-service", "logs"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stack\": \"backend\",\n  \"level\": \"info\",\n  \"package\": \"controller\",\n  \"message\": \"Test log from Postman — backend controller initialized\"\n}"
+            },
+            "description": "Send a structured log entry to the evaluation server. stack/level/package must be lowercase valid values."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Backend — Notification App (localhost:5000)",
+      "description": "All endpoints served by the local Express backend (notification_app_be).",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/health",
+              "host": ["{{backendUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Verify the backend is running and healthy."
+          }
+        },
+        {
+          "name": "Get All Notifications (page 1, no filter)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications?page=1&limit=10",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Fetch first page of notifications (no type filter). Returns pagination metadata."
+          }
+        },
+        {
+          "name": "Get All Notifications (page 2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications?page=2&limit=10",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page",  "value": "2" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Fetch second page of notifications."
+          }
+        },
+        {
+          "name": "Get Notifications — Filter: Placement",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications?notification_type=Placement&page=1&limit=10",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Placement" },
+                { "key": "page",              "value": "1" },
+                { "key": "limit",             "value": "10" }
+              ]
+            },
+            "description": "Fetch only Placement notifications."
+          }
+        },
+        {
+          "name": "Get Notifications — Filter: Result",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications?notification_type=Result&page=1&limit=10",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Result" },
+                { "key": "page",              "value": "1" },
+                { "key": "limit",             "value": "10" }
+              ]
+            },
+            "description": "Fetch only Result notifications."
+          }
+        },
+        {
+          "name": "Get Notifications — Filter: Event",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications?notification_type=Event&page=1&limit=10",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "Event" },
+                { "key": "page",              "value": "1" },
+                { "key": "limit",             "value": "10" }
+              ]
+            },
+            "description": "Fetch only Event notifications."
+          }
+        },
+        {
+          "name": "Get Notifications — Invalid type (400 test)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications?notification_type=InvalidType",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "notification_type", "value": "InvalidType" }
+              ]
+            },
+            "description": "Expects a 400 Bad Request response with validation error message."
+          }
+        },
+        {
+          "name": "Get Priority Notifications (top 10)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications/priority?n=10",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications", "priority"],
+              "query": [
+                { "key": "n", "value": "10" }
+              ]
+            },
+            "description": "Returns top 10 priority notifications ranked by (type weight × recency factor). Uses min-heap algorithm."
+          }
+        },
+        {
+          "name": "Get Priority Notifications (top 5)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications/priority?n=5",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications", "priority"],
+              "query": [
+                { "key": "n", "value": "5" }
+              ]
+            },
+            "description": "Returns top 5 priority notifications."
+          }
+        },
+        {
+          "name": "Get Priority Notifications (top 20)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/notifications/priority?n=20",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "notifications", "priority"],
+              "query": [
+                { "key": "n", "value": "20" }
+              ]
+            },
+            "description": "Returns top 20 priority notifications."
+          }
+        },
+        {
+          "name": "404 Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backendUrl}}/api/nonexistent",
+              "host": ["{{backendUrl}}"],
+              "path": ["api", "nonexistent"]
+            },
+            "description": "Expects a 404 Not Found response."
+          }
+        }
+      ]
+    }
+  ]
+}
